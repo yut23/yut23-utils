@@ -4,6 +4,7 @@
 
 import math
 import sys
+from typing import Tuple
 
 import pytest
 from hypothesis import assume, example, given, note
@@ -37,7 +38,7 @@ def test_int_to_float(x_int: int) -> None:
 
 
 @st.composite
-def float_pairs(draw: st.DrawFn, max_ulps: int) -> tuple[float, float, int]:
+def float_pairs(draw: st.DrawFn, max_ulps: int) -> Tuple[float, float, int]:
     a = draw(st.floats(allow_nan=False, allow_infinity=False))
     ulps = draw(st.integers(min_value=-max_ulps, max_value=max_ulps))
 
@@ -56,7 +57,7 @@ def float_pairs(draw: st.DrawFn, max_ulps: int) -> tuple[float, float, int]:
 @example((5e-324, 0.0, -1))
 @example((5e-324, -0.0, -1))
 @example((-5e-324, 5e-324, 2))
-def test_ulp_diff(args: tuple[float, float, int]) -> None:
+def test_ulp_diff(args: Tuple[float, float, int]) -> None:
     a, b, ulps = args
     assert ulp_diff(a, b) == ulps
 
@@ -80,7 +81,7 @@ def test_ulp_diff_errors(a: float, b: float) -> None:
 
 @given(float_pairs(max_ulps=100))
 @example((-5e-324, 5e-324, 2))
-def test_compare_ulp(args: tuple[float, float, int]) -> None:
+def test_compare_ulp(args: Tuple[float, float, int]) -> None:
     a, b, ulps = args
     assert compare_ulp(a, b, abs(ulps))
     if abs(ulps) > 0:
