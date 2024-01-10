@@ -18,8 +18,8 @@ def int_to_float(q: int, /) -> float:
     return cast(float, struct.unpack("<d", struct.pack("<Q", q))[0])
 
 
-def ulp_diff(a: float, b: float) -> int:
-    """Return the (signed) number of representable FP64 values in the range [a, b)."""
+def ulp_diff(a: float, b: float, /, *, include_sign: bool = False) -> int:
+    """Return the number of representable FP64 values in the range [a, b)."""
     if not math.isfinite(a) or not math.isfinite(b):
         msg = "only finite values can be compared"
         raise ValueError(msg)
@@ -27,7 +27,10 @@ def ulp_diff(a: float, b: float) -> int:
         return 0
     if a > b:
         # pylint: disable-next=arguments-out-of-order
-        return -ulp_diff(b, a)
+        ulps = ulp_diff(b, a)
+        if include_sign:
+            ulps *= -1
+        return ulps
     if math.copysign(1.0, a) != math.copysign(1.0, b):
         # different signs: split the interval at zero
         return ulp_diff(a, -0.0) + ulp_diff(0.0, b)
@@ -39,7 +42,7 @@ def compare_ulp(a: float, b: float, /, ulps: int) -> bool:
     if ulps < 0:
         msg = "ulps must be non-negative"
         raise ValueError(msg)
-    return abs(ulp_diff(a, b)) <= ulps
+    return ulp_diff(a, b, include_sign=False) <= ulps
 
 
 def _make_mask(bits: int) -> int:
