@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-regex-commit"]
 build-backend = "hatchling.build"
 
 [project]
@@ -31,6 +31,7 @@ Issues = "https://github.com/yut23/yut23-utils/issues"
 Source = "https://github.com/yut23/yut23-utils"
 
 [tool.hatch.version]
+source = "regex_commit"
 path = "src/yut23_utils/__about__.py"
 
 [tool.hatch.envs.default]
