@@ -33,6 +33,7 @@ Source = "https://github.com/yut23/yut23-utils"
 [tool.hatch.version]
 source = "regex_commit"
 path = "src/yut23_utils/__about__.py"
+tag_sign = false
 
 [tool.hatch.envs.default]
 dependencies = [
