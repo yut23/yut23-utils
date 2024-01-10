@@ -62,7 +62,7 @@ def test_ulp_diff(args: tuple[float, float, int]) -> None:
 
 
 @pytest.mark.parametrize(
-    "a,b",
+    ("a", "b"),
     [
         (math.inf, 3.14),
         (math.inf, math.inf),
@@ -72,10 +72,10 @@ def test_ulp_diff(args: tuple[float, float, int]) -> None:
     ],
 )
 def test_ulp_diff_errors(a: float, b: float) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="finite"):
         ulp_diff(a, b)
-    with pytest.raises(ValueError):
-        ulp_diff(b, a)
+    with pytest.raises(ValueError, match="finite"):
+        ulp_diff(b, a)  # pylint: disable=arguments-out-of-order
 
 
 @given(float_pairs(max_ulps=100))
@@ -89,12 +89,12 @@ def test_compare_ulp(args: tuple[float, float, int]) -> None:
 
 
 def test_compare_ulp_errors() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="non-negative"):
         compare_ulp(1.0, 1.0, -1)
 
 
 @given(st.floats())
-def test_FloatInspector(x: float) -> None:
+def test_float_inspector(x: float) -> None:
     fi = FloatInspector(x)
     note(f"fi={fi} (subnormal: {fi.is_subnormal()})")
     if not math.isnan(x):

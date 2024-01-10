@@ -21,7 +21,8 @@ def int_to_float(q: int, /) -> float:
 def ulp_diff(a: float, b: float) -> int:
     """Return the (signed) number of representable FP64 values in the range [a, b)."""
     if not math.isfinite(a) or not math.isfinite(b):
-        raise ValueError("only finite values can be compared")
+        msg = "only finite values can be compared"
+        raise ValueError(msg)
     if a == b:
         return 0
     if a > b:
@@ -36,7 +37,8 @@ def ulp_diff(a: float, b: float) -> int:
 def compare_ulp(a: float, b: float, /, ulps: int) -> bool:
     """Check if two numbers match to within a specified number of FP64 ULPs."""
     if ulps < 0:
-        raise ValueError("ulps must be non-negative")
+        msg = "ulps must be non-negative"
+        raise ValueError(msg)
     return abs(ulp_diff(a, b)) <= ulps
 
 
@@ -68,7 +70,9 @@ class FloatInspector:
         return (
             f"FloatData({float(self)} = "
             f"{self.raw_sign} * 2^{self.exponent} * {self.mantissa}; "
-            f"s={self.raw_sign}, e={self.raw_exponent:011b}, m={self.raw_mantissa:052b})"
+            f"s={self.raw_sign}, "
+            f"e={self.raw_exponent:011b}, "
+            f"m={self.raw_mantissa:052b})"
         )
 
     def __repr__(self) -> str:
