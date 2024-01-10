@@ -7,7 +7,7 @@ name = "yut23-utils"
 dynamic = ["version"]
 description = 'Common code I find myself reaching for from multiple different repositories.'
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = "BSD-3-Clause"
 keywords = []
 authors = [
@@ -16,7 +16,6 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -53,7 +52,7 @@ cov = [
 ]
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+python = ["3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.lint]
 detached = true
@@ -80,12 +79,12 @@ all = [
 ]
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
 line-length = 88
 skip-string-normalization = false
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 88
 select = [
   "A",
