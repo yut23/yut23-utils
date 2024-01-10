@@ -42,29 +42,32 @@ def compare_ulp(a: float, b: float, /, ulps: int) -> bool:
     return abs(ulp_diff(a, b)) <= ulps
 
 
+def _make_mask(bits: int) -> int:
+    return (1 << bits) - 1
+
+
 @dataclass(frozen=True)
 class FloatInspector:
     float_val: float
     int_val: int = field(init=False)
 
-    SIGN_MASK = 0x8000000000000000
-    EXP_MASK = 0x7FF0000000000000
-    MANT_MASK = 0x000FFFFFFFFFFFFF
+    EXP_BITS = 11
+    MANT_BITS = 52
 
     def __post_init__(self):
         object.__setattr__(self, "int_val", float_to_int(self.float_val))
 
     @cached_property
     def raw_sign(self) -> int:
-        return (self.int_val & self.SIGN_MASK) >> 63
+        return (self.int_val >> (self.EXP_BITS + self.MANT_BITS)) & 1
 
     @cached_property
     def raw_exponent(self) -> int:
-        return (self.int_val & self.EXP_MASK) >> 52
+        return (self.int_val >> self.MANT_BITS) & _make_mask(self.EXP_BITS)
 
     @cached_property
     def raw_mantissa(self) -> int:
-        return self.int_val & self.MANT_MASK
+        return self.int_val & _make_mask(self.MANT_BITS)
 
     def __str__(self) -> str:
         return (
@@ -102,10 +105,10 @@ class FloatInspector:
         return bool(self.raw_sign)
 
     def is_inf(self) -> bool:
-        return self.raw_exponent == 0x7FF and self.raw_mantissa == 0
+        return self.raw_exponent == _make_mask(self.EXP_BITS) and self.raw_mantissa == 0
 
     def is_nan(self) -> bool:
-        return self.raw_exponent == 0x7FF and self.raw_mantissa != 0
+        return self.raw_exponent == _make_mask(self.EXP_BITS) and self.raw_mantissa != 0
 
     def is_subnormal(self) -> bool:
         return self.raw_exponent == 0 and self.raw_mantissa != 0
