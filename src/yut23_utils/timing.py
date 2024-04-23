@@ -10,7 +10,7 @@ import statistics
 from dataclasses import dataclass
 from functools import cached_property
 from timeit import Timer
-from typing import Any
+from typing import Any, Callable
 
 __all__ = ["TimingFormat", "TimingInfo", "timeit"]
 
@@ -117,8 +117,8 @@ class TimingInfo:
 
 
 def timeit(  # pylint: disable=too-many-arguments
-    stmt: str = "pass",
-    setup: str = "pass",
+    stmt: str | Callable[[], Any] = "pass",
+    setup: str | Callable[[], Any] = "pass",
     repeat: int = 7,
     num_loops: int | None = None,
     # pylint: disable-next=redefined-builtin
