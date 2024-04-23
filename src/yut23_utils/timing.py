@@ -74,7 +74,9 @@ class TimingInfo:
 
     @cached_property
     def stdev(self) -> float:
-        return statistics.stdev(self.times, xbar=self.mean)
+        if self.repeat > 1:
+            return statistics.stdev(self.times, xbar=self.mean)
+        return float("nan")
 
     @cached_property
     def min(self) -> float:  # noqa: A003
