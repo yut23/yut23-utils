@@ -31,10 +31,11 @@ def ulp_diff(a: float, b: float, /, *, include_sign: bool = False) -> int:
         if include_sign:
             ulps *= -1
         return ulps
+    # b is now greater than a
     if math.copysign(1.0, a) != math.copysign(1.0, b):
         # different signs: split the interval at zero
         return ulp_diff(a, -0.0) + ulp_diff(0.0, b)
-    return abs(float_to_int(a) - float_to_int(b))
+    return float_to_int(b) - float_to_int(a)
 
 
 def compare_ulp(a: float, b: float, /, ulps: int) -> bool:
