@@ -9,10 +9,10 @@ import math
 import statistics
 from dataclasses import dataclass
 from functools import cached_property
-from timeit import Timer
+from timeit import Timer, default_timer
 from typing import Any, Callable
 
-__all__ = ["TimingFormat", "TimingInfo", "timeit"]
+__all__ = ["TimingFormat", "TimingInfo", "timeit", "ContextTimer"]
 
 
 def _calc_order(timespan: float) -> int:
@@ -140,3 +140,52 @@ def timeit(  # pylint: disable=too-many-arguments
     info = TimingInfo(times, num_loops=num_loops)
     print(info.pretty(fmt))  # noqa: T201
     return info
+
+
+class ContextTimer:
+    """Time a code block in a with statement.
+
+    >>> with ContextTimer() as t:
+    ...     # code here
+    >>> print(t.elapsed)
+    # time in seconds
+
+    If passed a string, a nicely formatted time will be printed after the block
+    finishes:
+
+    >>> with ContextTimer("frobnicate"):
+    ...     frobnicate(foo, bar)
+    ...
+    frobnicate: 36.1 ms
+    """
+
+    def __init__(self, name: str | None = None):
+        self.name = name
+        self.start: float | None = None
+        self.end: float | None = None
+
+    @property
+    def elapsed(self):
+        if self.start is None:
+            msg = "elapsed time is not accessible before entering a with block"
+            raise ValueError(msg)
+        if self.end is None:
+            # inside the with block, return the current elapsed time
+            return default_timer() - self.start
+        # outside the with block, return the total elapsed time
+        return self.end - self.start
+
+    def __enter__(self):
+        self.start = default_timer()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.end = default_timer()
+        if exc_type is None and self.name is not None:
+            if self.name:
+                # print here is intentional
+                print(f"{self.name}: {_format_time(self.elapsed)}")  # noqa: T201
+            else:
+                print(_format_time(self.elapsed))  # noqa: T201
+        # propagate any exceptions
+        return False
