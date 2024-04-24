@@ -87,6 +87,10 @@ class TimingInfo:
         return max(self.times)
 
     def pretty(self, fmt: TimingFormat) -> str:
+        def label_count(num: int, item: str) -> str:
+            return f"{num} {item}{'' if num == 1 else 's'}"
+
+        loop_str = label_count(self.num_loops, "loop")
         if fmt is TimingFormat.HYPERFINE:
             order = _calc_order(self.max)
             prec = 3 if order == 0 else 1
@@ -102,18 +106,27 @@ class TimingInfo:
             m = "\033[35m"
             r = "\033[0m"
             f = "\033[2m"
+            if self.repeat == 1:
+                return (
+                    f"  Time ({bg}abs{r} ≡):     "
+                    f"   {bg}{time_str(self.times[0])}{r}           "
+                    f"    {f}{self.repeat} run, {loop_str} each{r}"
+                )
             return (
-                f"  Time ({bg}mean{r} ± {g}σ{r}):  "  # noqa: RUF001
+                f"  Time ({bg}mean{r} ± {g}\u03c3{r}):  "
                 f"   {bg}{time_str(self.mean)}{r} ± {g}{time_str(self.stdev)}{r}\n"
                 f"  Range ({c}min{r} … {m}max{r}):"
                 f"   {c}{time_str(self.min)}{r} … {m}{time_str(self.max)}{r}"
-                f"    {f}{self.repeat} runs, {self.num_loops} loops each{r}"
+                f"    {f}{self.repeat} runs, {loop_str} each{r}"
             )
         if fmt is TimingFormat.IPYTHON:
+            mean_order = _calc_order(self.mean)
+            stdev_order = _calc_order(self.stdev) if self.repeat > 1 else mean_order
             return (
-                f"{_format_time(self.mean)} ± {_format_time(self.stdev)} per loop"
-                f" (mean ± std. dev. of {self.repeat} loops,"
-                f" {self.num_loops} loops each)"
+                f"{_format_time(self.mean, order=mean_order)}"
+                f" ± {_format_time(self.stdev, order=stdev_order)} per loop"
+                f" (mean ± std. dev. of {label_count(self.repeat, 'loop')},"
+                f" {loop_str} each)"
             )
         raise AssertionError
 
