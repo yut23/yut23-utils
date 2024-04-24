@@ -86,3 +86,25 @@ class TestTimingInfo:
         assert info.pretty(TimingFormat.IPYTHON) == (
             "3.14 s ± nan s per loop (mean ± std. dev. of 1 loop, 2 loops each)"
         )
+
+    def test_pretty_timeit(self):
+        times = (1.23, 3.21, 2.75, 2.53)
+
+        info = TimingInfo(times, 1)
+        assert info.pretty(TimingFormat.TIMEIT) == "1 loop, best of 4: 1.23 s per loop"
+
+        info = TimingInfo(times, 3)
+        assert info.pretty(TimingFormat.TIMEIT) == "3 loops, best of 4: 1.23 s per loop"
+
+    def test_pretty_timeit_single(self):
+        times = (3.14159,)
+
+        info = TimingInfo(times, 1)
+        assert info.pretty(TimingFormat.TIMEIT) == (
+            "1 loop, best of 1: 3.14 s per loop"
+        )
+
+        info = TimingInfo(times, 2)
+        assert info.pretty(TimingFormat.TIMEIT) == (
+            "2 loops, best of 1: 3.14 s per loop"
+        )

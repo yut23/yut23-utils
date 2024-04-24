@@ -42,6 +42,7 @@ def _format_time(
 class TimingFormat(enum.Enum):
     IPYTHON = enum.auto()
     HYPERFINE = enum.auto()
+    TIMEIT = enum.auto()
 
 
 @dataclass(frozen=True)
@@ -112,6 +113,11 @@ class TimingInfo:
                 f" ± {_format_time(self.stdev, order=stdev_order)} per loop"
                 f" (mean ± std. dev. of {label_count(self.repeat, 'loop')},"
                 f" {loop_str} each)"
+            )
+        if fmt is TimingFormat.TIMEIT:
+            return (
+                f"{loop_str}, best of {self.repeat}:"
+                f" {_format_time(self.min)} per loop"
             )
         raise AssertionError
 
