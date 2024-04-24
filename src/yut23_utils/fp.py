@@ -24,6 +24,8 @@ def ulp_diff(a: float, b: float, /, *, include_sign: bool = False) -> int:
         msg = "only finite values can be compared"
         raise ValueError(msg)
     if a == b:
+        # this case also covers 0.0 vs -0.0, which compare equal but have
+        # different representations
         return 0
     if a > b:
         # pylint: disable-next=arguments-out-of-order
@@ -31,11 +33,13 @@ def ulp_diff(a: float, b: float, /, *, include_sign: bool = False) -> int:
         if include_sign:
             ulps *= -1
         return ulps
-    # b is now greater than a
+    # b is now greater than a in value
     if math.copysign(1.0, a) != math.copysign(1.0, b):
         # different signs: split the interval at zero
         return ulp_diff(a, -0.0) + ulp_diff(0.0, b)
-    return float_to_int(b) - float_to_int(a)
+    # subtract the smaller in magnitude from the larger
+    smaller, larger = sorted((a, b), key=abs)
+    return float_to_int(larger) - float_to_int(smaller)
 
 
 def compare_ulp(a: float, b: float, /, ulps: int) -> bool:

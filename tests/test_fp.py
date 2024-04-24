@@ -54,12 +54,18 @@ def float_pairs(draw: st.DrawFn, max_ulps: int) -> tuple[float, float, int]:
 @given(float_pairs(max_ulps=100))
 @example((0.0, -5e-324, -1))
 @example((5e-324, 0.0, -1))
-@example((5e-324, -0.0, -1))
 @example((-5e-324, 5e-324, 2))
+@example((1, 2, 1 << 52))
+@example((2, 4, 1 << 52))
+@example((0, 1, 0x3FF << 52))
 def test_ulp_diff(args: tuple[float, float, int]) -> None:
     a, b, ulps = args
     assert ulp_diff(a, b) == abs(ulps)
+    assert ulp_diff(b, a) == abs(ulps)  # pylint: disable=arguments-out-of-order
     assert ulp_diff(a, b, include_sign=True) == ulps
+    assert ulp_diff(b, a, include_sign=True) == -ulps
+    assert ulp_diff(-b, -a, include_sign=True) == ulps
+    assert ulp_diff(-a, -b, include_sign=True) == -ulps
 
 
 @pytest.mark.parametrize(
@@ -95,7 +101,7 @@ def test_compare_ulp(args: tuple[float, float, int]) -> None:
 
 def test_compare_ulp_errors() -> None:
     with pytest.raises(ValueError, match="non-negative"):
-        compare_ulp(1.0, 1.0, -1)
+        compare_ulp(1.0, 1.0, ulps=-1)
 
 
 @given(st.floats())
