@@ -18,7 +18,7 @@ __all__ = ["TimingFormat", "TimingInfo", "timeit", "ContextTimer"]
 def _calc_order(timespan: float) -> int:
     if timespan == 0:
         return 3
-    return min(-int(math.floor(math.log10(timespan)) // 3), 3)
+    return min(max(0, -int(math.floor(math.log10(timespan)) // 3)), 3)
 
 
 # modified from IPython/core/magics/execution.py

@@ -5,21 +5,29 @@
 import math
 
 import pytest
-from hypothesis import given, note
+from hypothesis import example, given, note
 from hypothesis import strategies as st
 
 from yut23_utils.timing import TimingFormat, TimingInfo, _format_time
 
 
-@given(st.floats(min_value=1e-9, max_value=999), st.integers(min_value=1, max_value=10))
+@given(st.floats(min_value=0, max_value=1e9), st.integers(min_value=1, max_value=10))
+@example(0.0, 2)
+@example(1e-9, 3)
+@example(1e-6, 3)
+@example(1e-3, 3)
+@example(1.0, 3)
+@example(1000.0, 3)
 def test_format_time(t: float, precision: int) -> None:
     s = _format_time(t, precision=precision, fmt="f")
     note(f"formatted: {s!r}")
     num_str, unit = s.split()
     # unit should be chosen to give a whole number
-    assert float(num_str) >= 1.0
+    if t >= 1e-9:
+        assert float(num_str) >= 1.0
     # unit should be chosen to give a number less than 1 of the next larger unit
-    assert float(num_str) <= 1000.0
+    if t <= 1.0:
+        assert float(num_str) <= 1000.0
 
     # unit should match these ranges
     if t < 1e-6:
@@ -36,7 +44,7 @@ def test_format_time(t: float, precision: int) -> None:
 
 
 class TestTimingInfo:
-    def test_stdev(self) -> None:
+    def test_stdev(self):
         times = (1.23, 3.21, 2.75, 2.53)
         info = TimingInfo(times, 1)
         assert info.stdev == pytest.approx(0.8486852577172922)
