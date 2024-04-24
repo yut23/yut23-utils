@@ -1,8 +1,11 @@
 all: lint test
 
 lint:
-	hatch fmt --linter --check
+	hatch fmt --check
 	hatch run types:check
+
+format:
+	hatch fmt --formatter
 
 test:
 	hatch run test
@@ -16,4 +19,4 @@ test-all:
 coverage:
 	hatch run cov
 
-.PHONY: all lint test test-slow test-all coverage
+.PHONY: all lint format test test-slow test-all coverage
