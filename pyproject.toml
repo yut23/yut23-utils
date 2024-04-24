@@ -37,7 +37,7 @@ tag_sign = false
 
 [tool.hatch.envs.default]
 dependencies = [
-  "coverage[toml]>=6.5",
+  "coverage[toml]>=7.2",
   "pytest",
   "hypothesis",
 ]
@@ -100,9 +100,10 @@ yut23_utils = ["src/yut23_utils", "*/yut23-utils/src/yut23_utils"]
 tests = ["tests", "*/yut23-utils/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
+exclude_also = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
   "def __repr__",
+  "raise AssertionError",
+  "raise NotImplementedError",
 ]
