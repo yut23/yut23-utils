@@ -42,8 +42,13 @@ dependencies = [
   "hypothesis",
 ]
 [tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
+# nested scripts don't consume {args}: https://github.com/pypa/hatch/issues/987
+# basically, the first word is recursively replaced by its script if present,
+# then formats are expanded
+test = "pytest {args}"
+test-ci = "pytest --hypothesis-profile=ci {args}"
+test-cov = "coverage run -m pytest {args}"
+test-cov-ci = "coverage run -m pytest --hypothesis-profile=ci {args}"
 cov-report = [
   "- coverage combine",
   "coverage report",
@@ -53,7 +58,8 @@ cov = [
   "cov-report",
 ]
 cov-ci = [
-  "cov",
+  "test-cov-ci",
+  "cov-report",
   "- coverage xml",
 ]
 
