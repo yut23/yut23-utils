@@ -79,11 +79,11 @@ class TimingInfo:
         return float("nan")
 
     @cached_property
-    def min(self) -> float:  # noqa: A003
+    def min(self) -> float:
         return min(self.times)
 
     @cached_property
-    def max(self) -> float:  # noqa: A003
+    def max(self) -> float:
         return max(self.times)
 
     def pretty(self, fmt: TimingFormat) -> str:
