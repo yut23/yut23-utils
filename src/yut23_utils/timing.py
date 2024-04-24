@@ -123,8 +123,13 @@ def timeit(  # pylint: disable=too-many-arguments
     num_loops: int | None = None,
     # pylint: disable-next=redefined-builtin
     globals: dict[str, Any] | None = None,  # noqa: A002
-    fmt: TimingFormat = TimingFormat.HYPERFINE,
+    fmt: TimingFormat | None = TimingFormat.HYPERFINE,
 ) -> TimingInfo:
+    """IPython %timeit work-alike, with a similar interface as timeit.timeit().
+
+    Prints a summary of the times if `fmt` is not None, and returns a
+    TimingInfo object holding the full results.
+    """
     timer = Timer(stmt, setup, globals=globals)
     if num_loops is None:
         num_loops, total_time = timer.autorange()
@@ -136,7 +141,8 @@ def timeit(  # pylint: disable=too-many-arguments
         for t in [total_time, *timer.repeat(repeat=repeat - 1, number=num_loops)]
     )
     info = TimingInfo(times, num_loops=num_loops)
-    print(info.pretty(fmt))  # noqa: T201
+    if fmt is not None:
+        print(info.pretty(fmt))  # noqa: T201
     return info
 
 
@@ -153,7 +159,6 @@ class ContextTimer:
 
     >>> with ContextTimer("frobnicate"):
     ...     frobnicate(foo, bar)
-    ...
     frobnicate: 36.1 ms
     """
 
