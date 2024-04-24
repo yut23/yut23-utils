@@ -31,21 +31,6 @@ def _format_time(
 ) -> str:
     """Formats the timespan in a human readable form"""
 
-    if timespan >= 60.0:  # noqa: PLR2004
-        # we have more than a minute, format that in a human readable form
-        # Idea from http://snipplr.com/view/5713/
-        parts = [("d", 60 * 60 * 24), ("h", 60 * 60), ("min", 60), ("s", 1)]
-        time_str = []
-        leftover = timespan
-        for suffix, length in parts:
-            value = int(leftover / length)
-            if value > 0:
-                leftover = leftover % length
-                time_str.append(f"{value!s}{suffix}")
-            if leftover < 1:
-                break
-        return " ".join(time_str)
-
     units = ["s", "ms", "μs", "ns"]
     scaling = [1, 1e3, 1e6, 1e9]
 
