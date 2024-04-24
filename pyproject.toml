@@ -82,6 +82,7 @@ extend = "ruff_defaults.toml"
 
 [tool.hatch.envs.hatch-static-analysis]
 config-path = "ruff_defaults.toml"
+dependencies = ["ruff==0.4.1"]
 
 [tool.ruff.lint.extend-per-file-ignores]
 # we expect unused imports in __init__.py, as it shouldn't have anything else
