@@ -5,8 +5,34 @@
 import math
 
 import pytest
+from hypothesis import given, note
+from hypothesis import strategies as st
 
-from yut23_utils.timing import TimingFormat, TimingInfo
+from yut23_utils.timing import TimingFormat, TimingInfo, _format_time
+
+
+@given(st.floats(min_value=1e-9, max_value=999), st.integers(min_value=1, max_value=10))
+def test_format_time(t: float, precision: int) -> None:
+    s = _format_time(t, precision=precision, fmt="f")
+    note(f"formatted: {s!r}")
+    num_str, unit = s.split()
+    # unit should be chosen to give a whole number
+    assert float(num_str) >= 1.0
+    # unit should be chosen to give a number less than 1 of the next larger unit
+    assert float(num_str) <= 1000.0
+
+    # unit should match these ranges
+    if t < 1e-6:
+        assert unit == "ns"
+    elif t < 1e-3:
+        assert unit == "μs"
+    elif t < 1.0:
+        assert unit == "ms"
+    else:
+        assert unit == "s"
+
+    # number should have `precision` decimals
+    assert len(num_str.partition(".")[2]) == precision
 
 
 class TestTimingInfo:
