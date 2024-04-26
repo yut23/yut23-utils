@@ -8,7 +8,7 @@ import pytest
 from hypothesis import example, given, note
 from hypothesis import strategies as st
 
-from yut23_utils.timing import TimingFormat, TimingInfo, _format_time
+from yut23_utils.timing import TimingFormat, TimingInfo, format_time
 
 
 @given(st.floats(min_value=0, max_value=1e9), st.integers(min_value=1, max_value=10))
@@ -19,7 +19,7 @@ from yut23_utils.timing import TimingFormat, TimingInfo, _format_time
 @example(1.0, 3)
 @example(1000.0, 3)
 def test_format_time(t: float, precision: int) -> None:
-    s = _format_time(t, precision=precision, fmt="f")
+    s = format_time(t, precision=precision, fmt="f")
     note(f"formatted: {s!r}")
     num_str, unit = s.split()
     # unit should be chosen to give a whole number

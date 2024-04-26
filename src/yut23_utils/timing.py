@@ -22,7 +22,7 @@ def _calc_order(timespan: float) -> int:
 
 
 # modified from IPython/core/magics/execution.py
-def _format_time(
+def format_time(
     timespan: float,
     precision: int = 3,
     *,
@@ -83,7 +83,7 @@ class TimingInfo:
 
             def time_str(timespan: float) -> str:
                 return "{:>8s}".format(
-                    _format_time(timespan, precision=prec, fmt="f", order=order)
+                    format_time(timespan, precision=prec, fmt="f", order=order)
                 )
 
             bg = "\033[1;32m"
@@ -109,15 +109,15 @@ class TimingInfo:
             mean_order = _calc_order(self.mean)
             stdev_order = _calc_order(self.stdev) if self.repeat > 1 else mean_order
             return (
-                f"{_format_time(self.mean, order=mean_order)}"
-                f" ± {_format_time(self.stdev, order=stdev_order)} per loop"
+                f"{format_time(self.mean, order=mean_order)}"
+                f" ± {format_time(self.stdev, order=stdev_order)} per loop"
                 f" (mean ± std. dev. of {label_count(self.repeat, 'loop')},"
                 f" {loop_str} each)"
             )
         if fmt is TimingFormat.TIMEIT:
             return (
                 f"{loop_str}, best of {self.repeat}:"
-                f" {_format_time(self.min)} per loop"
+                f" {format_time(self.min)} per loop"
             )
         raise AssertionError
 
@@ -193,8 +193,8 @@ class ContextTimer:
         if exc_type is None and self.name is not None:
             if self.name:
                 # print here is intentional
-                print(f"{self.name}: {_format_time(self.elapsed)}")  # noqa: T201
+                print(f"{self.name}: {format_time(self.elapsed)}")  # noqa: T201
             else:
-                print(_format_time(self.elapsed))  # noqa: T201
+                print(format_time(self.elapsed))  # noqa: T201
         # propagate any exceptions
         return False
