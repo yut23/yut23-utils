@@ -9,7 +9,13 @@ import pytest
 from hypothesis import example, given, note
 from hypothesis import strategies as st
 
-from yut23_utils.timing import TimingFormat, TimingInfo, format_time, timeit
+from yut23_utils.timing import (
+    ContextTimer,
+    TimingFormat,
+    TimingInfo,
+    format_time,
+    timeit,
+)
 
 
 @given(st.floats(min_value=0, max_value=1e9), st.integers(min_value=1, max_value=10))
@@ -208,3 +214,36 @@ class TestTimeit:
         self.run(repeat=3, num_loops=5, fmt=TimingFormat.TIMEIT)
         captured = capsys.readouterr()
         assert captured.out == "5 loops, best of 3: 1 s per loop\n"
+
+
+class TestContextTimer:
+    def test_elapsed(self):
+        fake_timer = FakeTimer()
+        with ContextTimer(timer=fake_timer) as t:
+            assert t.elapsed == 0.0
+            fake_timer.inc()
+            assert t.elapsed == 1.0
+            fake_timer.inc()
+            assert t.elapsed == 2.0
+        assert t.elapsed == 2.0
+        fake_timer.inc()
+        assert t.elapsed == 2.0
+
+    def test_elapsed_before_with(self):
+        t = ContextTimer()
+        with pytest.raises(ValueError, match="before entering a with block"):
+            _ = t.elapsed
+
+    def test_printing(self, capsys):
+        fake_timer = FakeTimer(seconds_per_increment=0.5)
+        with ContextTimer("foobar", timer=fake_timer):
+            fake_timer.inc()
+        captured = capsys.readouterr()
+        assert captured.out == "foobar: 500 ms\n"
+
+    def test_printing_empty(self, capsys):
+        fake_timer = FakeTimer(seconds_per_increment=0.0361)
+        with ContextTimer("", timer=fake_timer):
+            fake_timer.inc()
+        captured = capsys.readouterr()
+        assert captured.out == "36.1 ms\n"

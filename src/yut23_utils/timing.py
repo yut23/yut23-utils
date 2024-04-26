@@ -169,10 +169,13 @@ class ContextTimer:
     frobnicate: 36.1 ms
     """
 
-    def __init__(self, name: str | None = None):
+    def __init__(
+        self, name: str | None = None, *, timer: Callable[[], float] = default_timer
+    ):
         self.name = name
         self.start: float | None = None
         self.end: float | None = None
+        self._timer = timer
 
     @property
     def elapsed(self):
@@ -181,16 +184,16 @@ class ContextTimer:
             raise ValueError(msg)
         if self.end is None:
             # inside the with block, return the current elapsed time
-            return default_timer() - self.start
+            return self._timer() - self.start
         # outside the with block, return the total elapsed time
         return self.end - self.start
 
     def __enter__(self):
-        self.start = default_timer()
+        self.start = self._timer()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.end = default_timer()
+        self.end = self._timer()
         if exc_type is None and self.name is not None:
             if self.name:
                 # print here is intentional
