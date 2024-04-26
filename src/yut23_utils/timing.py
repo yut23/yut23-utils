@@ -127,24 +127,25 @@ def timeit(  # pylint: disable=too-many-arguments
     setup: str | Callable[[], Any] = "pass",
     repeat: int = 7,
     num_loops: int | None = None,
+    timer: Callable[[], float] = default_timer,
     # pylint: disable-next=redefined-builtin
     globals: dict[str, Any] | None = None,  # noqa: A002
     fmt: TimingFormat | None = TimingFormat.HYPERFINE,
 ) -> TimingInfo:
-    """IPython %timeit work-alike, with a similar interface as timeit.timeit().
+    """IPython %timeit work-alike, with a similar interface to timeit.timeit().
 
     Prints a summary of the times if `fmt` is not None, and returns a
     TimingInfo object holding the full results.
     """
-    timer = Timer(stmt, setup, globals=globals)
+    timer_obj = Timer(stmt, setup, timer=timer, globals=globals)
     if num_loops is None:
-        num_loops, total_time = timer.autorange()
+        num_loops, total_time = timer_obj.autorange()
     else:
         # do a single run to get the first time
-        total_time = timer.timeit(number=num_loops)
+        total_time = timer_obj.timeit(number=num_loops)
     times = tuple(
         t / num_loops
-        for t in [total_time, *timer.repeat(repeat=repeat - 1, number=num_loops)]
+        for t in [total_time, *timer_obj.repeat(repeat=repeat - 1, number=num_loops)]
     )
     info = TimingInfo(times, num_loops=num_loops)
     if fmt is not None:

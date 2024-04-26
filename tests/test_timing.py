@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import math
+from typing import Any
 
 import pytest
 from hypothesis import example, given, note
 from hypothesis import strategies as st
 
-from yut23_utils.timing import TimingFormat, TimingInfo, format_time
+from yut23_utils.timing import TimingFormat, TimingInfo, format_time, timeit
 
 
 @given(st.floats(min_value=0, max_value=1e9), st.integers(min_value=1, max_value=10))
@@ -44,9 +45,12 @@ def test_format_time(t: float, precision: int) -> None:
 
 
 class TestTimingInfo:
-    def test_stdev(self):
+    def test_properties(self):
         times = (1.23, 3.21, 2.75, 2.53)
         info = TimingInfo(times, 1)
+        assert info.min == 1.23
+        assert info.max == 3.21
+        assert info.mean == pytest.approx(2.4299999999999997)
         assert info.stdev == pytest.approx(0.8486852577172922)
 
     def test_stdev_single(self):
@@ -142,3 +146,65 @@ class TestTimingInfo:
         assert info.pretty(TimingFormat.TIMEIT) == (
             "2 loops, best of 1: 3.14 s per loop"
         )
+
+
+# Borrowed from cpython/Lib/test/test_timeit.py
+class FakeTimer:
+    BASE_TIME = 42.0
+
+    def __init__(self, seconds_per_increment: float = 1.0):
+        self.count = 0
+        self.setup_calls = 0
+        self.seconds_per_increment = seconds_per_increment
+
+    def __call__(self) -> float:
+        return self.BASE_TIME + self.count * self.seconds_per_increment
+
+    def inc(self) -> None:
+        self.count += 1
+
+    def setup(self) -> None:
+        self.setup_calls += 1
+
+
+class TestTimeit:
+    @classmethod
+    def run(cls, **kwargs: Any) -> tuple[TimingInfo, FakeTimer]:
+        timer_kwargs = {}
+        if "seconds_per_increment" in kwargs:
+            timer_kwargs["seconds_per_increment"] = kwargs.pop("seconds_per_increment")
+        fake_timer = FakeTimer(**timer_kwargs)
+        info = timeit(
+            stmt="fake_timer.inc()",
+            setup="fake_timer.setup()",
+            timer=fake_timer,
+            globals={"fake_timer": fake_timer},
+            **kwargs,
+        )
+        return info, fake_timer
+
+    def test_timeit(self):
+        info, timer = self.run(repeat=3, num_loops=10, fmt=None)
+
+        assert timer.setup_calls == 3
+        assert timer.count == 30
+
+        assert info.repeat == 3
+        assert info.num_loops == 10
+        assert info.times == (1.0,) * 3
+
+    def test_timeit_autorange(self):
+        info, timer = self.run(seconds_per_increment=1 / 1024, repeat=4, fmt=None)
+        # we don't care about the specifics of Timer.autorange(), so don't check
+        # the exact numbers
+        assert timer.setup_calls >= 4
+        assert timer.count >= 4 * 500
+
+        assert info.repeat == 4
+        assert info.num_loops == 500
+        assert info.times == (1 / 1024,) * 4
+
+    def test_timeit_output(self, capsys):
+        self.run(repeat=3, num_loops=5, fmt=TimingFormat.TIMEIT)
+        captured = capsys.readouterr()
+        assert captured.out == "5 loops, best of 3: 1 s per loop\n"
