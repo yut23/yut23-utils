@@ -188,6 +188,10 @@ class ContextTimer:
         # outside the with block, return the total elapsed time
         return self.end - self.start
 
+    @property
+    def pretty_elapsed(self):
+        return format_time(self.elapsed)
+
     def __enter__(self):
         self.start = self._timer()
         return self
@@ -197,8 +201,8 @@ class ContextTimer:
         if exc_type is None and self.name is not None:
             if self.name:
                 # print here is intentional
-                print(f"{self.name}: {format_time(self.elapsed)}")  # noqa: T201
+                print(f"{self.name}: {self.pretty_elapsed}")  # noqa: T201
             else:
-                print(format_time(self.elapsed))  # noqa: T201
+                print(self.pretty_elapsed)  # noqa: T201
         # propagate any exceptions
         return False
