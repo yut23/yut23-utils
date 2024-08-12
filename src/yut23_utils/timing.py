@@ -179,7 +179,7 @@ class ContextTimer:
         self._timer = timer
 
     @property
-    def elapsed(self):
+    def elapsed(self) -> float:
         if self.start is None:
             msg = "elapsed time is not accessible before entering a with block"
             raise ValueError(msg)
@@ -190,7 +190,7 @@ class ContextTimer:
         return self.end - self.start
 
     @property
-    def pretty_elapsed(self):
+    def pretty_elapsed(self) -> str:
         warnings.warn(
             "ContextTimer.pretty_elapsed is deprecated, use str() instead",
             DeprecationWarning,
