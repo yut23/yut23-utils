@@ -7,6 +7,7 @@ from __future__ import annotations
 import enum
 import math
 import statistics
+import warnings
 from dataclasses import dataclass
 from functools import cached_property
 from timeit import Timer, default_timer
@@ -190,6 +191,14 @@ class ContextTimer:
 
     @property
     def pretty_elapsed(self):
+        warnings.warn(
+            "ContextTimer.pretty_elapsed is deprecated, use str() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return str(self)
+
+    def __str__(self) -> str:
         return format_time(self.elapsed)
 
     def __enter__(self):
@@ -201,8 +210,8 @@ class ContextTimer:
         if exc_type is None and self.name is not None:
             if self.name:
                 # print here is intentional
-                print(f"{self.name}: {self.pretty_elapsed}")  # noqa: T201
+                print(f"{self.name}: {self}")  # noqa: T201
             else:
-                print(self.pretty_elapsed)  # noqa: T201
+                print(self)  # noqa: T201
         # propagate any exceptions
         return False
