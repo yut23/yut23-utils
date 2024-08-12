@@ -19,6 +19,7 @@ from yut23_utils.fp import (
 
 
 @given(st.floats())
+@example(float("nan"))
 def test_float_to_int(x_flt: float) -> None:
     x_int = float_to_int(x_flt)
     assert isinstance(x_int, int)
