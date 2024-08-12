@@ -105,6 +105,7 @@ def test_compare_ulp_errors() -> None:
 
 
 @given(st.floats())
+@example(float("nan"))
 def test_float_inspector(x: float) -> None:
     fi = FloatInspector(x)
     note(f"fi={fi} (subnormal: {fi.is_subnormal()})")
