@@ -229,6 +229,22 @@ class TestContextTimer:
         fake_timer.inc()
         assert t.elapsed == 2.0
 
+    def test_str(self):
+        fake_timer = FakeTimer()
+        with ContextTimer(timer=fake_timer) as t:
+            assert str(t) == format_time(0.0)
+            fake_timer.inc()
+            fake_timer.inc()
+            assert str(t) == format_time(2.0)
+        assert str(t) == format_time(2.0)
+
+    def test_pretty_elapsed(self):
+        fake_timer = FakeTimer()
+        with ContextTimer(timer=fake_timer) as t, pytest.warns(
+            DeprecationWarning, match="use str"
+        ):
+            assert t.pretty_elapsed == format_time(0.0)
+
     def test_elapsed_before_with(self):
         t = ContextTimer()
         with pytest.raises(ValueError, match="before entering a with block"):
