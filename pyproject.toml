@@ -92,6 +92,12 @@ extend = "ruff_defaults.toml"
 config-path = "ruff_defaults.toml"
 dependencies = ["ruff==0.4.1"]
 
+[tool.ruff.lint]
+# disable fixes that get in my way with ale_fix_on_save
+unfixable = [
+  "F401",  # unused imports
+]
+
 [tool.ruff.lint.extend-per-file-ignores]
 # we expect unused imports in __init__.py, as it shouldn't have anything else
 "__init__.py" = ["F401"]

@@ -240,8 +240,9 @@ class TestContextTimer:
 
     def test_pretty_elapsed(self):
         fake_timer = FakeTimer()
-        with ContextTimer(timer=fake_timer) as t, pytest.warns(
-            DeprecationWarning, match="use str"
+        with (
+            ContextTimer(timer=fake_timer) as t,
+            pytest.warns(DeprecationWarning, match="use str"),
         ):
             assert t.pretty_elapsed == format_time(0.0)
 
