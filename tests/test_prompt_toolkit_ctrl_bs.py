@@ -75,9 +75,10 @@ class TestPatch:
 def test_ipdb_ctrl_bs(mocker: MockerFixture) -> None:
     # mock out the patch function, as we've tested it above
     mock_patch = mocker.patch("yut23_utils._prompt_toolkit_ctrl_bs.patch")
-    # undo imports when the test is finished
-    mocker.patch.dict("sys.modules")
 
+    # unload the module if it's been imported already
+    modules = mocker.patch.dict("sys.modules")
+    modules.pop("yut23_utils.ipdb_ctrl_bs", None)
     # pylint: disable-next=import-outside-toplevel
     from yut23_utils.ipdb_ctrl_bs import TerminalPdb
 
