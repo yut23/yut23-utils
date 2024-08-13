@@ -16,7 +16,7 @@ test-slow:
 test-all:
 	hatch run all:test
 
-coverage:
+cov:
 	hatch run cov
 
 .PHONY: all lint format test test-slow test-all coverage
