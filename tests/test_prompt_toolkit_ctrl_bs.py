@@ -27,7 +27,7 @@ def mock_esc_seqs(mocker: MockerFixture) -> MagicMock:
     return esc_seqs
 
 
-class TestIpdbCtrlBs:
+class TestPatch:
     def test_no_keys_controlbackspace(self, mocker: MockerFixture) -> None:
         # Keys.ControlBackspace not present
         esc_seqs = mock_esc_seqs(mocker)
