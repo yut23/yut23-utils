@@ -38,8 +38,10 @@ tag_sign = false
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=7.2",
-  "pytest",
   "hypothesis",
+  "ipython",
+  "pytest",
+  "pytest-mock",
 ]
 [tool.hatch.envs.default.scripts]
 # nested scripts don't consume {args}: https://github.com/pypa/hatch/issues/987
@@ -70,7 +72,9 @@ python = ["3.9", "3.10", "3.11", "3.12"]
 dependencies = [
   "mypy>=1.0.0",
   "hypothesis",
+  "ipython",
   "pytest",
+  "pytest-mock",
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/yut23_utils tests}"
