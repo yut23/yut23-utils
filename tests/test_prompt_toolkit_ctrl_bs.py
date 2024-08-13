@@ -13,25 +13,25 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
 
-def mock_esc_seqs(mocker: MockerFixture) -> MagicMock:
-    # this is accessed by name in _get_reverse_ansi_sequences()
-    ansi_seqs = mocker.patch.dict(
-        "prompt_toolkit.input.ansi_escape_sequences.ANSI_SEQUENCES", clear=True
-    )
-    esc_seqs = mocker.patch(
-        "yut23_utils._prompt_toolkit_ctrl_bs.esc_seqs",
-        ANSI_SEQUENCES=ansi_seqs,
-        REVERSE_ANSI_SEQUENCES={},
-    )
-    mocker.seal(esc_seqs)
-    return esc_seqs
-
-
 class TestPatch:
-    def test_no_keys_controlbackspace(self, mocker: MockerFixture) -> None:
-        # Keys.ControlBackspace not present
-        esc_seqs = mock_esc_seqs(mocker)
+    @pytest.fixture
+    def esc_seqs(self, mocker: MockerFixture) -> MagicMock:
+        # this is accessed by name in _get_reverse_ansi_sequences()
+        ansi_seqs = mocker.patch.dict(
+            "prompt_toolkit.input.ansi_escape_sequences.ANSI_SEQUENCES", clear=True
+        )
+        esc_seqs = mocker.patch(
+            "yut23_utils._prompt_toolkit_ctrl_bs.esc_seqs",
+            ANSI_SEQUENCES=ansi_seqs,
+            REVERSE_ANSI_SEQUENCES={},
+        )
+        mocker.seal(esc_seqs)
+        return esc_seqs
 
+    def test_no_keys_controlbackspace(
+        self, mocker: MockerFixture, esc_seqs: MagicMock
+    ) -> None:
+        # Keys.ControlBackspace not present
         Keys = mocker.patch("yut23_utils._prompt_toolkit_ctrl_bs.Keys")  # noqa: N806
         del Keys.ControlBackspace
 
@@ -42,10 +42,10 @@ class TestPatch:
         assert isinstance(key, tuple)
         assert not esc_seqs.REVERSE_ANSI_SEQUENCES
 
-    def test_with_keys_controlbackspace(self, mocker: MockerFixture) -> None:
+    def test_with_keys_controlbackspace(
+        self, mocker: MockerFixture, esc_seqs: MagicMock
+    ) -> None:
         # Keys.ControlBackspace present
-        esc_seqs = mock_esc_seqs(mocker)
-
         Keys = mocker.patch("yut23_utils._prompt_toolkit_ctrl_bs.Keys")  # noqa: N806
         Keys.ControlBackspace = "c-backspace"
 
@@ -59,9 +59,7 @@ class TestPatch:
         assert key == Keys.ControlBackspace
         assert esc_seqs.REVERSE_ANSI_SEQUENCES[key] == _CTRL_BACKSPACE_SEQ
 
-    def test_unneeded(self, mocker: MockerFixture) -> None:
-        esc_seqs = mock_esc_seqs(mocker)
-
+    def test_unneeded(self, mocker: MockerFixture, esc_seqs: MagicMock) -> None:
         # add placeholder entry for _CTRL_BACKSPACE_SEQ
         esc_seqs.ANSI_SEQUENCES[_CTRL_BACKSPACE_SEQ] = mocker.sentinel.key
 
