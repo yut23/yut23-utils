@@ -11,7 +11,13 @@ import warnings
 from dataclasses import dataclass
 from functools import cached_property
 from timeit import Timer, default_timer
-from typing import Any, Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any, Callable
+
+    from typing_extensions import Self
+
 
 __all__ = ["TimingFormat", "TimingInfo", "timeit", "ContextTimer"]
 
@@ -139,15 +145,13 @@ def timeit(  # pylint: disable=too-many-arguments
     TimingInfo object holding the full results.
     """
     timer_obj = Timer(stmt, setup, timer=timer, globals=globals)
+    raw_times = []
     if num_loops is None:
         num_loops, total_time = timer_obj.autorange()
-    else:
-        # do a single run to get the first time
-        total_time = timer_obj.timeit(number=num_loops)
-    times = tuple(
-        t / num_loops
-        for t in [total_time, *timer_obj.repeat(repeat=repeat - 1, number=num_loops)]
-    )
+        raw_times.append(total_time)
+        repeat -= 1
+    raw_times.extend(timer_obj.repeat(repeat=repeat, number=num_loops))
+    times = tuple(t / num_loops for t in raw_times)
     info = TimingInfo(times, num_loops=num_loops)
     if fmt is not None:
         print(info.pretty(fmt))  # noqa: T201
@@ -201,7 +205,7 @@ class ContextTimer:
     def __str__(self) -> str:
         return format_time(self.elapsed)
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.start = self._timer()
         return self
 
