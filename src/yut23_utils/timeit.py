@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-present Eric T. Johnson
+# SPDX-FileCopyrightText: 2025-present Eric T. Johnson
 #
 # SPDX-License-Identifier: BSD-3-Clause
 """Work-alike for `python -m timeit` with my custom formatting."""
@@ -68,13 +68,13 @@ treated similarly.
         help="print the stdout and stderr of the statement instead of suppressing it",
     )
     parser.add_argument(
-        "statement", action="append", help="statement to be timed (default 'pass')"
+        "statement", nargs="*", help="statement to be timed (default 'pass')"
     )
     args = parser.parse_args(arguments)
 
     timer = timing.default_timer
     stmt = "\n".join(args.statement) or "pass"
-    setup = "\n".join(args.setup) or "pass"
+    setup = "\n".join(args.setup) if args.setup else "pass"
     fmt = getattr(timing.TimingFormat, args.format.upper())
 
     # Include the current directory, so that local imports work (sys.path
@@ -82,7 +82,7 @@ treated similarly.
     # directory)
 
     sys.path.insert(0, os.curdir)
-    if _wrap_timer is not None:
+    if _wrap_timer is not None:  # pragma: no branch
         timer = _wrap_timer(timer)
 
     # from https://stackoverflow.com/a/52442331

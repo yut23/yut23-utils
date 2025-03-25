@@ -2,13 +2,17 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+from __future__ import annotations
+
 import math
+import sys
 from typing import Any
 
 import pytest
 from hypothesis import example, given, note
 from hypothesis import strategies as st
 
+import yut23_utils.timeit
 from yut23_utils.timing import (
     ContextTimer,
     TimingFormat,
@@ -172,19 +176,28 @@ class FakeTimer:
     def setup(self) -> None:
         self.setup_calls += 1
 
+    def wrap_timer(self, timer):
+        """Records 'timer' and returns self as callable timer."""
+        self.saved_timer = timer
+        return self
+
 
 class TestTimeit:
+    fake_setup = "import yut23_utils.timing; yut23_utils.timing._fake_timer.setup()"
+    fake_stmt = "import yut23_utils.timing; yut23_utils.timing._fake_timer.inc()"
+
     @classmethod
     def run(cls, **kwargs: Any) -> tuple[TimingInfo, FakeTimer]:
         timer_kwargs = {}
         if "seconds_per_increment" in kwargs:
             timer_kwargs["seconds_per_increment"] = kwargs.pop("seconds_per_increment")
         fake_timer = FakeTimer(**timer_kwargs)
+        # pylint: disable-next=protected-access
+        yut23_utils.timing._fake_timer = fake_timer  # type: ignore[attr-defined]  # noqa: SLF001
         info = timeit(
-            stmt="fake_timer.inc()",
-            setup="fake_timer.setup()",
+            stmt=cls.fake_stmt,
+            setup=cls.fake_setup,
             timer=fake_timer,
-            globals={"fake_timer": fake_timer},
             **kwargs,
         )
         return info, fake_timer
@@ -214,6 +227,82 @@ class TestTimeit:
         self.run(repeat=3, num_loops=5, fmt=TimingFormat.TIMEIT)
         captured = capsys.readouterr()
         assert captured.out == "5 loops, best of 3: 1 s per loop\n"
+
+    def run_main(
+        self, seconds_per_increment: float = 1.0, switches: list[str] | None = None
+    ) -> int | None:
+        timer = FakeTimer(seconds_per_increment=seconds_per_increment)
+        # pylint: disable-next=protected-access
+        yut23_utils.timing._fake_timer = timer  # type: ignore[attr-defined]  # noqa: SLF001
+        args = [] if switches is None else switches[:]
+        args.append(self.fake_stmt)
+        # timeit.main() modifies sys.path, so save and restore it
+        orig_sys_path = sys.path[:]
+        ret = yut23_utils.timeit.main(arguments=args, _wrap_timer=timer.wrap_timer)
+        sys.path[:] = orig_sys_path[:]
+        return ret
+
+    def test_main(self, capsys):
+        assert (
+            self.run_main(seconds_per_increment=0.5, switches=["-f", "timeit"]) is None
+        )
+        captured = capsys.readouterr()
+        assert captured.out == "1 loop, best of 7: 500 ms per loop\n"
+        assert captured.err == ""
+
+    def test_main_format_ipython(self, capsys):
+        assert self.run_main(switches=["-f", "ipython"]) is None
+        captured = capsys.readouterr()
+        assert (
+            captured.out
+            == "1 s ± 0 ns per loop (mean ± std. dev. of 7 loops, 1 loop each)\n"
+        )
+        assert captured.err == ""
+
+    def test_main_format_hyperfine(self, capsys):
+        assert self.run_main(switches=["-f", "hyperfine"]) is None
+        captured = capsys.readouterr()
+        assert captured.out == (
+            "  Time (\x1b[1;32mmean\x1b[0m ± \x1b[32m\u03c3\x1b[0m):"
+            "     \x1b[1;32m 1.000 s\x1b[0m ± \x1b[32m 0.000 s\x1b[0m\n"
+            "  Range (\x1b[36mmin\x1b[0m … \x1b[35mmax\x1b[0m):"
+            "   \x1b[36m 1.000 s\x1b[0m … \x1b[35m 1.000 s\x1b[0m"
+            "    \x1b[2m7 runs, 1 loop each\x1b[0m\n"
+        )
+        assert captured.err == ""
+
+    def test_main_format_timeit(self, capsys):
+        assert self.run_main(switches=["-f", "timeit"]) is None
+        captured = capsys.readouterr()
+        assert captured.out == "1 loop, best of 7: 1 s per loop\n"
+        assert captured.err == ""
+
+    def test_main_exception(self, capsys):
+        assert self.run_main(switches=["1/0"]) == 1
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        exc_lines = captured.err.splitlines()
+        assert len(exc_lines) > 2
+        assert exc_lines[0].startswith("Traceback")
+        assert exc_lines[-1].startswith("ZeroDivisionError")
+
+    def test_main_show_output(self, capsys):
+        assert (
+            self.run_main(
+                switches=[
+                    "-n4",
+                    "-r3",
+                    "-f",
+                    "timeit",
+                    "--show-output",
+                    "print('x')",
+                ]
+            )
+            is None
+        )
+        captured = capsys.readouterr()
+        assert captured.out == "x\n" * 12 + "4 loops, best of 3: 1 s per loop\n"
+        assert captured.err == ""
 
 
 class TestContextTimer:
