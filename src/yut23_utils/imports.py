@@ -1,3 +1,4 @@
+import contextlib
 import importlib.util
 import os
 import sys
@@ -12,5 +13,11 @@ def import_from_path(module_name: str, file_path: os.PathLike[str]) -> ModuleTyp
         raise ImportError(msg, name=module_name)
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        # clear out sys.modules if there was an error
+        with contextlib.suppress(KeyError):
+            del sys.modules[module_name]
+        raise
     return module
