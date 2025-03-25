@@ -129,7 +129,18 @@ class TimingInfo:
         raise AssertionError
 
 
-def timeit(  # pylint: disable=too-many-arguments
+def _timeit_helper(timer_obj: Timer, repeat: int, num_loops: int | None) -> TimingInfo:
+    raw_times = []
+    if num_loops is None:
+        num_loops, total_time = timer_obj.autorange()
+        raw_times.append(total_time)
+        repeat -= 1
+    raw_times.extend(timer_obj.repeat(repeat=repeat, number=num_loops))
+    times = tuple(t / num_loops for t in raw_times)
+    return TimingInfo(times, num_loops=num_loops)
+
+
+def timeit(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     stmt: str | Callable[[], Any] = "pass",
     setup: str | Callable[[], Any] = "pass",
     repeat: int = 7,
@@ -145,14 +156,7 @@ def timeit(  # pylint: disable=too-many-arguments
     TimingInfo object holding the full results.
     """
     timer_obj = Timer(stmt, setup, timer=timer, globals=globals)
-    raw_times = []
-    if num_loops is None:
-        num_loops, total_time = timer_obj.autorange()
-        raw_times.append(total_time)
-        repeat -= 1
-    raw_times.extend(timer_obj.repeat(repeat=repeat, number=num_loops))
-    times = tuple(t / num_loops for t in raw_times)
-    info = TimingInfo(times, num_loops=num_loops)
+    info = _timeit_helper(timer_obj=timer_obj, repeat=repeat, num_loops=num_loops)
     if fmt is not None:
         print(info.pretty(fmt))  # noqa: T201
     return info
