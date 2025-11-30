@@ -13,7 +13,7 @@ def filter_trace(trace: list[str], source_path: Path) -> list[str]:
         while frame := next(it):
             if (m := FRAME_RE.match(frame)) is not None:
                 file = Path(m["file"])
-                assert file.is_absolute(), file
+                assert file.is_absolute(), file  # noqa: S101
                 if file.is_relative_to(source_path) and file.parts[-2] != "tests":
                     return [frame, *it]
     except StopIteration:
@@ -23,10 +23,7 @@ def filter_trace(trace: list[str], source_path: Path) -> list[str]:
 
 def main() -> None:
     in_file, out_file, *rest = sys.argv[1:]
-    if rest:
-        source_path = Path(rest[0])
-    else:
-        source_path = Path()
+    source_path = Path(rest[0]) if rest else Path()
     source_path = source_path.resolve()
     with open(in_file) as f, open(out_file, "w") as of:
         for line in f:
