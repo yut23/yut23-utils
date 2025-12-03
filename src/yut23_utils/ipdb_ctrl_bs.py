@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-present Eric T. Johnson
+#
+# SPDX-License-Identifier: BSD-3-Clause
 """Shim to support CSI-u ctrl-backspace in ipdb under pytest.
 
 Monkey-patches prompt_toolkit to handle the escape sequence upon import.

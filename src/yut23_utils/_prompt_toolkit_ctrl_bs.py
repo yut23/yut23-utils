@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-present Eric T. Johnson
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import warnings
 
 import prompt_toolkit.input.ansi_escape_sequences as esc_seqs

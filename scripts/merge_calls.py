@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2025-present Eric T. Johnson
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import re
 import sys
 from pathlib import Path

@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2025-present Eric T. Johnson
+#
+# SPDX-License-Identifier: BSD-3-Clause
 set -euo pipefail
 
 args=()
