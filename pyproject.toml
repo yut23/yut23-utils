@@ -30,6 +30,9 @@ Documentation = "https://github.com/yut23/yut23-utils#readme"
 Issues = "https://github.com/yut23/yut23-utils/issues"
 Source = "https://github.com/yut23/yut23-utils"
 
+[project.scripts]
+ulp_diff = "yut23_utils._ulp_diff_script:main"
+
 [tool.hatch.version]
 source = "regex_commit"
 path = "src/yut23_utils/__about__.py"
